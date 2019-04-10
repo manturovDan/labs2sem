@@ -5,11 +5,20 @@ struct Item {
 } typedef Item;
 
 struct Quadrant {
-	int xMin;
-	int xMax;
-	int yMin;
-	int yMax;
+	int coordMin;
+	int coordMax;
 	Item **point;
 	int busy;
-	Quadrant *child[4];
+	struct Quadrant *child[4];
 } typedef Quadrant;
+
+Quadrant *create(int size, int capacity) {
+	Quadrant *root = (Quadrant *)calloc(1, sizeof(Quadrant));
+	root->coordMin = - size / 2;
+	root->coordMax = size / 2 + (size % 2) - 1;
+
+	Item **points = (Item **) calloc(capacity, sizeof(Item *));
+	root->point = points;
+
+	return root;
+}

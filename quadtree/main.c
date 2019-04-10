@@ -1,6 +1,9 @@
+//agree that key compares in spaces by min<=x<=max
+//SIZE of side of quadrant, keys are from -SIZE div 2 to SIZE div(top top)2 - 1 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "tree.c"
 
 int get_nInt(int *a) {
     int n;
@@ -112,9 +115,34 @@ int dialog(const char *msgs[], int N) {
 }
 
 int main () {
-    int rc;
+    int rc, n;
 
-    printf("Creating or loading tree...\n");
+    while (1) {
+        printf("This is QUADtree program.\n\
+Insert 1 to create new tree or insert 0 to load free from file:\n");
+        
+        n = get_nInt(&rc);
+        if (rc == 1) {
+            printf("Input SIZE of QUADRANT side.\n\
+Keys are from -SIZE div 2 to SIZE div(top top)2 - 1\n");
+            int size, capacity;
+            get_nInt(&size);
+            printf("Input capacity of one quadrant:\n");
+            get_nInt(&capacity);
+
+            if (size == 0 || capacity == 0) 
+                continue;
+
+            Quadrant *root = create(size, capacity);
+
+            break;
+
+        }
+        else {
+            break;
+        }
+    }
+
     while (rc = dialog(msgs, NMsgs)) {
         fptr[rc]();
     }
