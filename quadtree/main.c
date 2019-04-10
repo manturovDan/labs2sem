@@ -74,7 +74,9 @@ int D_Create(),
 int (*fptr[])() = { NULL, D_Add, D_Find, D_Delete, D_Show };
 
 int D_Add() {
-    printf("test\n");
+    int n, x, y;
+    printf("Keys are integers (1 ÷ 2)\nInput X-key:\n");
+
 }
 
 int D_Find() {
@@ -116,6 +118,7 @@ int dialog(const char *msgs[], int N) {
 
 int main () {
     int rc, n;
+    Quadrant *root;
 
     while (1) {
         printf("This is QUADtree program.\n\
@@ -133,7 +136,7 @@ Keys are from -SIZE div 2 to SIZE div(top top)2 - 1\n");
             if (size == 0 || capacity == 0) 
                 continue;
 
-            Quadrant *root = create(size, capacity);
+            root = create(size, capacity);
 
             break;
 
