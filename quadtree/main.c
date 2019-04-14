@@ -100,10 +100,10 @@ int D_Add(Quadrant *root, int size, int capacity) {
     	printf("Error! Input key in correct interval!\n");
     	return 1;
     }
-    printf("Input information");
+    printf("Input information:\n");
     info = getStr();
 
-    add_el(root, x, y, info);
+    add_el(root, x, y, capacity, info);
 
 }
 
@@ -115,8 +115,23 @@ int D_Delete() {
     printf("test\n");
 }
 
-int D_Show() {
-    printf("test\n");
+int D_Show(Quadrant *root, int size, int capacity) {
+    for(int i = 0;; i++) {
+    	int emp = 1;
+    	for(int c = 0; c < capacity; c++) {
+    		if(root->point[c] == NULL) {
+    			printf("NULL ");
+    		}
+    		else {
+    			emp = 0;
+    			printf("(%d, %d)", root->point[c]->x,  root->point[c]->y);
+    		}
+    	}
+    	printf("\n");
+    	if(emp == 0)
+    		break;
+
+    }
 }
 
 int dialog(const char *msgs[], int N) {
@@ -165,6 +180,7 @@ Keys are from -SIZE div 2 to SIZE div(top top)2 - 1\n");
 
             root = create(size, capacity);
             printf("New tree was created\n");
+            printf("Addr :%p\n", root);
             break;
 
         }
@@ -176,6 +192,9 @@ Keys are from -SIZE div 2 to SIZE div(top top)2 - 1\n");
     while (rc = dialog(msgs, NMsgs)) {
         if (rc == 1) {
             D_Add(root, size, capacity);
+        }
+        else if(rc == 4) {
+        	D_Show(root, size, capacity);
         }
     }
 }
