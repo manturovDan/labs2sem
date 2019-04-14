@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include "tree.c"
 
-int get_nInt(int *a) {
+int get_Int(int *a, int nat) {
     int n;
     do {
         n = scanf("%d", a);
@@ -16,14 +16,24 @@ int get_nInt(int *a) {
             continue;
         }
 
-        if (*a < 0 || *a > 100000000) {
-            printf("Input natural number <= 100M\n");
+        if (*a > 100000000) {
+            printf("Input number <= 100M\n");
             n = 0;
         }
+
+        if(nat == 1 && *a < 0) {
+        	printf("Input natural number\n");
+            n = 0;
+        }
+
     } while(n == 0);
 
     scanf("%*1[\n]");
     return n < 0 ? 0 : 1;
+}
+
+int get_nInt(int *a) {
+    return get_Int(a, 1);
 }
 
 char *getStr() {
@@ -66,16 +76,34 @@ const char *msgs[] = {"Menu:\n0. Quit", "1. Add element to tree",
 int NMsgs = sizeof(msgs) / sizeof(msgs[0]);
 
 int D_Create(),
-    D_Add(),
+    D_Add(Quadrant *, int, int),
     D_Find(),
     D_Delete(),
     D_Show();
 
 int (*fptr[])() = { NULL, D_Add, D_Find, D_Delete, D_Show };
 
-int D_Add() {
+int D_Add(Quadrant *root, int size, int capacity) {
     int n, x, y;
-    printf("Keys are integers (1 ÷ 2)\nInput X-key:\n");
+    char *info = NULL;
+    printf("Keys are integers (%d ÷ %d)\nInput X-key:\n", -size/2, - size / 2 + size - 1);
+    get_Int(&x, 0);
+    if(x < - size / 2 || x > - size / 2 + size - 1)
+    {
+    	printf("Error! Input key in correct interval!\n");
+    	return 1;
+    }
+    printf("Input Y-key:\n");
+    get_Int(&y, 0);
+    if(y < - size / 2 || y > - size / 2 + size - 1)
+    {
+    	printf("Error! Input key in correct interval!\n");
+    	return 1;
+    }
+    printf("Input information");
+    info = getStr();
+
+    add_el(root, x, y, info);
 
 }
 
@@ -117,7 +145,7 @@ int dialog(const char *msgs[], int N) {
 }
 
 int main () {
-    int rc, n;
+    int rc, n, size, capacity;
     Quadrant *root;
 
     while (1) {
@@ -128,7 +156,6 @@ Insert 1 to create new tree or insert 0 to load free from file:\n");
         if (rc == 1) {
             printf("Input SIZE of QUADRANT side.\n\
 Keys are from -SIZE div 2 to SIZE div(top top)2 - 1\n");
-            int size, capacity;
             get_nInt(&size);
             printf("Input capacity of one quadrant:\n");
             get_nInt(&capacity);
@@ -137,7 +164,7 @@ Keys are from -SIZE div 2 to SIZE div(top top)2 - 1\n");
                 continue;
 
             root = create(size, capacity);
-
+            printf("New tree was created\n");
             break;
 
         }
@@ -147,6 +174,8 @@ Keys are from -SIZE div 2 to SIZE div(top top)2 - 1\n");
     }
 
     while (rc = dialog(msgs, NMsgs)) {
-        fptr[rc]();
+        if (rc == 1) {
+            D_Add(root, size, capacity);
+        }
     }
 }
