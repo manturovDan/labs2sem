@@ -137,7 +137,7 @@ int D_Delete(Quadrant *root, int size, int capacity) {
 int D_Show(Quadrant *root, int size, int capacity, int deep) {
 	for (int t = 0; t < deep; t++)
 		printf("\t");
-	printf("[Addr: %p] ", root);
+	printf("[Addr: %p; Busy: %d] ", root, root->busy);
 	
 	for (int i = 0; i < capacity; i++) {
 		if(root->point[i] == NULL)

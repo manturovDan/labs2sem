@@ -190,6 +190,34 @@ int check_brothers(Quadrant *parent, int capacity) { //0 - not free; 1 - free
 	return 1;
 }
 
+SearchRes find_successor(Quadrant *ancentor, int capacity) {
+	SearchRes successor;
+	int i;
+
+	successor.owner = ancentor;
+	while (1) {
+		for (i = 0; i < 4; i++) {
+			if(successor.owner->child[i]->busy != 0) {
+				break;
+			}
+		}
+
+		printf("III: %d\n", i);
+		if (successor.owner->child[i]->child[0] == NULL) {
+			for (int k = 0; k < capacity; k++) {
+				if(successor.owner->child[i]->point[k] != NULL) {
+					successor.owner = successor.owner->child[i];
+					successor.place = k;
+					return successor;
+				}
+			}
+		}
+		else {
+			successor.owner = successor.owner->child[i];
+		}
+	}
+}
+
 int delete_el(Quadrant *root, int size, int capacity, int x, int y) {
 	SearchRes victim = search(root, x, y, capacity);
 	if(victim.owner == NULL) {
@@ -202,10 +230,25 @@ int delete_el(Quadrant *root, int size, int capacity, int x, int y) {
 		free(victim.owner->point[victim.place]);
 		victim.owner->point[victim.place] = NULL;
 		victim.owner->busy--;
-		if(check_brothers(parent, capacity) == 1) {
+		if(parent != NULL && check_brothers(parent, capacity) == 1) {
 			for(int k = 0; k < 4; k++) {
 				free(parent->child[k]);
 				parent->child[k] = NULL;
+			}
+		}
+	}
+	else {
+		free(victim.owner->point[victim.place]->info);
+		free(victim.owner->point[victim.place]);
+		SearchRes successor = find_successor(victim.owner, capacity);
+		printf("Successor: %s\n", successor.owner->point[successor.place]->info);
+		victim.owner->point[victim.place] = successor.owner->point[successor.place];
+		successor.owner->point[successor.place] = NULL;
+		successor.owner->busy--;
+		if(check_brothers(successor.owner->parent, capacity) == 1) {
+			for(int k = 0; k < 4; k++) {
+				free(successor.owner->parent->child[k]);
+				successor.owner->parent->child[k] = NULL;
 			}
 		}
 	}
