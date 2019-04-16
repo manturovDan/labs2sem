@@ -77,8 +77,8 @@ int NMsgs = sizeof(msgs) / sizeof(msgs[0]);
 
 int D_Create(),
     D_Add(Quadrant *, int, int),
-    D_Find(Quadrant *, int, int),
-    D_Delete(),
+    D_Find(),
+    D_Delete(Quadrant *, int, int),
     D_Show();
 
 int (*fptr[])() = { NULL, D_Add, D_Find, D_Delete, D_Show };
@@ -130,7 +130,8 @@ int D_Delete(Quadrant *root, int size, int capacity) {
     	return 1;
     }
 
-    
+    delete_el(root, size, capacity, x, y);
+
 }
 
 int D_Show(Quadrant *root, int size, int capacity, int deep) {

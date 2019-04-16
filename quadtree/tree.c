@@ -179,3 +179,34 @@ int add_el (Quadrant *root, int x, int y, int capacity, char *info) {
 		return 1;
 	}
 }
+
+int check_brothers(Quadrant *parent, int capacity) { //0 - not free; 1 - free
+	for(int i = 0; i < 4; i++) {
+		for(int c = 0; c < capacity; c++) {
+			if (parent->child[i]->point[c] != NULL) 
+				return 0;
+		}
+	}
+	return 1;
+}
+
+int delete_el(Quadrant *root, int size, int capacity, int x, int y) {
+	SearchRes victim = search(root, x, y, capacity);
+	if(victim.owner == NULL) {
+		return 1;
+	}
+
+	if (victim.owner->child[0] == NULL) {
+		Quadrant *parent = victim.owner->parent;
+		free(victim.owner->point[victim.place]->info);
+		free(victim.owner->point[victim.place]);
+		victim.owner->point[victim.place] = NULL;
+		victim.owner->busy--;
+		if(check_brothers(parent, capacity) == 1) {
+			for(int k = 0; k < 4; k++) {
+				free(parent->child[k]);
+				parent->child[k] = NULL;
+			}
+		}
+	}
+}
