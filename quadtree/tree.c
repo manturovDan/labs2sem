@@ -307,15 +307,6 @@ int stepToShowTree(Quadrant *current, bItem **bRoot, int capacity) {
 	}
 }
 
-int showBTreeStep(bItem *bRoot) {
-	if(bRoot == NULL)
-		return 0;
-	showBTreeStep(bRoot->left);
-	printf("x: %d; y: %d, info: %s\n", bRoot->elem->x, bRoot->elem->y, bRoot->elem->info);
-	showBTreeStep(bRoot->right);
-	return 0;
-}
-
 int delBTree(bItem *bRoot) {
 	if (bRoot == NULL) 
 		return 0;

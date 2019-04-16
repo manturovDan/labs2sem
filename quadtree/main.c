@@ -72,7 +72,7 @@ char *getStr() {
 const char *msgs[] = {"Menu:\n0. Quit", "1. Add element to tree",
                         "2. Find element", "3. Delete element", 
                         "4. Show tree", "5. Save in file",
-                    	"6. Show items by X-key"};
+                    	"6. Show items by X-key", "7. Show elements from range"};
 
 int NMsgs = sizeof(msgs) / sizeof(msgs[0]);
 
@@ -244,6 +244,15 @@ int D_Load(Quadrant **root, int *size, int *capacity) {
 
 }
 
+int showBTreeStep(bItem *bRoot) {
+	if(bRoot == NULL)
+		return 0;
+	showBTreeStep(bRoot->left);
+	printf("x: %d; y: %d, info: %s\n", bRoot->elem->x, bRoot->elem->y, bRoot->elem->info);
+	showBTreeStep(bRoot->right);
+	return 0;
+}
+
 int D_Show_Elems(Quadrant *root, int size, int capacity) {
 	bItem **bRoot = (bItem **)calloc(1, sizeof(bItem *));
 	stepToShowTree(root, bRoot, capacity);
@@ -251,6 +260,57 @@ int D_Show_Elems(Quadrant *root, int size, int capacity) {
 	delBTree(*bRoot);
 	free(bRoot);
 	return 0;
+}
+
+int showRect(Quadrant *square, int size, int capacity, int xMin, int xMax, int yMin, int yMax) {
+	for(int i = 0; i < capacity; i++) {
+		if(square->point[i] != NULL && square->point[i]->x >= xMin && square->point[i]->x <= xMax && square->point[i]->y >= yMin && square->point[i]->y <= yMax) {
+			printf("x: %d; y: %d; info: %s\n", square->point[i]->x, square->point[i]->y, square->point[i]->info);
+		}
+	}
+
+	if(square->child[0] == NULL)
+		return 0;
+	else {
+		for (int k = 0; k < 4; k++)
+			if (square->child[k]->xMin <= xMax && square->child[k]->xMax >= xMin && square->child[k]->yMin <= yMax && square->child[k]->yMax >= yMin)
+				showRect(square->child[k], size, capacity, xMin, xMax, yMin, yMax);	
+	}
+}
+
+int D_ShowRange(Quadrant *root, int size, int capacity) {
+	int n, xMin, xMax, yMin, yMax;
+    char *info = NULL;
+    printf("Keys are integers (%d ÷ %d)\nInput minimum X-key:\n", -size/2, - size / 2 + size - 1);
+    get_Int(&xMin, 0);
+    if(xMin < - size / 2 || xMin > - size / 2 + size - 1)
+    {
+    	printf("Error! Input keys in correct interval!\n");
+    	return 1;
+    }
+    printf("Input maximum X-key:\n");
+    get_Int(&xMax, 0);
+    if(xMax < xMin || xMax < - size / 2 || xMax > - size / 2 + size - 1)
+    {
+    	printf("Error! Input keys in correct interval!\n");
+    	return 1;
+    }
+    printf("Input minimum Y-key:\n");
+    get_Int(&yMin, 0);
+    if(yMin < - size / 2 || yMin > - size / 2 + size - 1)
+    {
+    	printf("Error! Input keys in correct interval!\n");
+    	return 1;
+    }
+    printf("Input maximum Y-key:\n");
+    get_Int(&yMax, 0);
+    if(yMax < yMin || yMax < - size / 2 || yMax > - size / 2 + size - 1)
+    {
+    	printf("Error! Input keys in correct interval!\n");
+    	return 1;
+    }
+
+    showRect(root, size, capacity, xMin, xMax, yMin, yMax);
 }
 
 int dialog(const char *msgs[], int N) {
@@ -324,6 +384,9 @@ Keys are from -SIZE div 2 to SIZE div(top top)2 - 1\n");
         }
         else if(rc == 6) {
         	D_Show_Elems(*root, size, capacity);
+        }
+        else if (rc == 7) {
+        	D_ShowRange(*root, size, capacity);
         }
     }
 }
