@@ -15,6 +15,13 @@ struct Quadrant {
 	struct Quadrant *parent;
 } typedef Quadrant;
 
+struct bItem {
+	Item *elem;
+	struct bItem *parent;
+	struct bItem *left;
+	struct bItem *right;
+} typedef bItem;
+
 struct SearchRes {
 	Quadrant *owner;
 	int place;
@@ -252,4 +259,67 @@ int delete_el(Quadrant *root, int size, int capacity, int x, int y) {
 			}
 		}
 	}
+}
+
+int bAdd(Item *added, bItem **bRoot, int capacity) {
+	bItem *newL = (bItem *)calloc(1, sizeof(bItem));
+	newL->elem = added;
+
+	if (*bRoot == NULL) {
+		*bRoot = newL;
+		return 0;
+	}
+
+	bItem *cur = *bRoot;
+	bItem *parent = NULL;
+
+	while (cur != NULL) {
+		parent = cur;
+		if(added->x < cur->elem->x)
+			cur = cur->left;
+		else
+			cur = cur->right;
+	}
+
+	if (added->x < parent->elem->x)
+		parent->left = newL;
+	else
+		parent->right = newL;
+	newL->parent = parent;
+
+	return 0;
+}
+
+int stepToShowTree(Quadrant *current, bItem **bRoot, int capacity) {
+	for(int i = 0; i < capacity; i++) {
+		if(current->point[i] != NULL) {
+			bAdd(current->point[i], bRoot, capacity);
+		}
+	}
+
+	if(current->child[0] == NULL) 
+		return 0;
+	else {
+		stepToShowTree(current->child[0], bRoot, capacity);
+		stepToShowTree(current->child[1], bRoot, capacity);
+		stepToShowTree(current->child[2], bRoot, capacity);
+		stepToShowTree(current->child[3], bRoot, capacity);
+	}
+}
+
+int showBTreeStep(bItem *bRoot) {
+	if(bRoot == NULL)
+		return 0;
+	showBTreeStep(bRoot->left);
+	printf("x: %d; y: %d, info: %s\n", bRoot->elem->x, bRoot->elem->y, bRoot->elem->info);
+	showBTreeStep(bRoot->right);
+	return 0;
+}
+
+int delBTree(bItem *bRoot) {
+	if (bRoot == NULL) 
+		return 0;
+	delBTree(bRoot->left);
+	delBTree(bRoot->right);
+	free(bRoot);
 }

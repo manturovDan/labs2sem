@@ -71,7 +71,8 @@ char *getStr() {
 
 const char *msgs[] = {"Menu:\n0. Quit", "1. Add element to tree",
                         "2. Find element", "3. Delete element", 
-                        "4. Show tree", "5. Save in file"};
+                        "4. Show tree", "5. Save in file",
+                    	"6. Show items by X-key"};
 
 int NMsgs = sizeof(msgs) / sizeof(msgs[0]);
 
@@ -243,6 +244,15 @@ int D_Load(Quadrant **root, int *size, int *capacity) {
 
 }
 
+int D_Show_Elems(Quadrant *root, int size, int capacity) {
+	bItem **bRoot = (bItem **)calloc(1, sizeof(bItem *));
+	stepToShowTree(root, bRoot, capacity);
+	showBTreeStep(*bRoot);
+	delBTree(*bRoot);
+	free(bRoot);
+	return 0;
+}
+
 int dialog(const char *msgs[], int N) {
     char *errmsg = "";
     int rc;
@@ -311,6 +321,9 @@ Keys are from -SIZE div 2 to SIZE div(top top)2 - 1\n");
         }
         else if(rc == 5) {
         	D_Save(*root, size, capacity);
+        }
+        else if(rc == 6) {
+        	D_Show_Elems(*root, size, capacity);
         }
     }
 }
