@@ -171,11 +171,11 @@ int add_el (Quadrant *root, int x, int y, int capacity, char *info) {
 				tofill->point[i]->x = x;
 				tofill->point[i]->y = y;
 				tofill->point[i]->info = info;
-				break;
+				return 0;
 			}
 		}
 	}
 	else {
-		printf("Element has aleady added!\n");
+		return 1;
 	}
 }

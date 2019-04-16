@@ -71,13 +71,13 @@ char *getStr() {
 
 const char *msgs[] = {"Menu:\n0. Quit", "1. Add element to tree",
                         "2. Find element", "3. Delete element", 
-                        "4. Show tree"};
+                        "4. Show tree", "5. Save in file"};
 
 int NMsgs = sizeof(msgs) / sizeof(msgs[0]);
 
 int D_Create(),
     D_Add(Quadrant *, int, int),
-    D_Find(),
+    D_Find(Quadrant *, int, int),
     D_Delete(),
     D_Show();
 
@@ -103,7 +103,9 @@ int D_Add(Quadrant *root, int size, int capacity) {
     printf("Input information:\n");
     info = getStr();
 
-    add_el(root, x, y, capacity, info);
+    if (add_el(root, x, y, capacity, info) == 1) {
+    	printf("Element has been added!\n");
+    }
 
 }
 
@@ -111,27 +113,133 @@ int D_Find() {
     printf("test\n");
 }
 
-int D_Delete() {
-    printf("test\n");
+int D_Delete(Quadrant *root, int size, int capacity) {
+	int n, x, y;
+    printf("Keys are integers (%d ÷ %d)\nInput X-key of deleted element:\n", -size/2, - size / 2 + size - 1);
+    get_Int(&x, 0);
+    if(x < - size / 2 || x > - size / 2 + size - 1)
+    {
+    	printf("Error! Input key in correct interval!\n");
+    	return 1;
+    }
+    printf("Input Y-key of deleted element:\n");
+    get_Int(&y, 0);
+    if(y < - size / 2 || y > - size / 2 + size - 1)
+    {
+    	printf("Error! Input key in correct interval!\n");
+    	return 1;
+    }
+
+    
 }
 
-int D_Show(Quadrant *root, int size, int capacity) {
-    for(int i = 0;; i++) {
-    	int emp = 1;
-    	for(int c = 0; c < capacity; c++) {
-    		if(root->point[c] == NULL) {
-    			printf("NULL ");
-    		}
-    		else {
-    			emp = 0;
-    			printf("(%d, %d)", root->point[c]->x,  root->point[c]->y);
-    		}
-    	}
-    	printf("\n");
-    	if(emp == 0)
-    		break;
+int D_Show(Quadrant *root, int size, int capacity, int deep) {
+	for (int t = 0; t < deep; t++)
+		printf("\t");
+	printf("[Addr: %p] ", root);
+	
+	for (int i = 0; i < capacity; i++) {
+		if(root->point[i] == NULL)
+			printf("(%d NULL) ", i);
+		else 
+			printf("(%d [%d; %d] : %s) ", i, root->point[i]->x, root->point[i]->y, root->point[i]->info);
+	}
+	printf("\n");
 
-    }
+	if (root->child[0] != NULL) {
+		D_Show(root->child[0], size, capacity, deep+1);
+		D_Show(root->child[1], size, capacity, deep+1);
+		D_Show(root->child[2], size, capacity, deep+1);
+		D_Show(root->child[3], size, capacity, deep+1);
+	}
+	else {
+		return 0;
+	}
+}
+
+int writeQuad(Quadrant *current, int capacity, FILE *fp) {
+	int str_size;
+	for(int i = 0; i < capacity; i++) {\
+		if (current->point[i] != NULL) {
+			fwrite(&(current->point[i]->x), sizeof(int), 1, fp);
+			fwrite(&(current->point[i]->y), sizeof(int), 1, fp);
+			str_size = strlen(current->point[i]->info) + 1;
+			fwrite(&str_size, sizeof(int), 1, fp);
+			fwrite(current->point[i]->info, sizeof(char), str_size, fp);
+		}
+	}
+	if(current->child[0] == NULL) 
+		return 0;
+	else {
+		writeQuad(current->child[0], capacity, fp);
+		writeQuad(current->child[1], capacity, fp);
+		writeQuad(current->child[2], capacity, fp);
+		writeQuad(current->child[3], capacity, fp);
+	}
+}
+
+int D_Save(Quadrant *root, int size, int capacity) {
+	char *fileName;
+	printf("Input name of file:\n");
+	fileName = getStr();
+	FILE *fp = fopen(fileName, "w+b");
+	if (fp == NULL) {
+		printf("File error\n");
+		return 1;
+	}
+	
+	fwrite(&size, sizeof(int), 1, fp);
+	fwrite(&capacity, sizeof(int), 1, fp);
+	writeQuad(root, capacity, fp);
+	fclose(fp);
+	free(fileName);
+	return 0;
+}
+
+int D_Load(Quadrant **root, int *size, int *capacity) {
+	char *fileName;
+	printf("Enter file name:\n");
+	fileName = getStr();
+	FILE *fp = fopen(fileName, "r+b");
+	if(fp == NULL) {
+		printf("File error\n");
+		return 1;
+	}
+
+	fseek(fp, 0, SEEK_END);
+	long int f_size = ftell(fp);
+	printf("FSIZE: %ld\n", f_size);
+	fseek(fp, 0, SEEK_SET);
+
+	fread(size, sizeof(int), 1, fp);
+	fread(capacity, sizeof(int), 1, fp);
+
+	*root = create(*size, *capacity);
+
+	int x, y, len;
+	char *info;
+	while (ftell(fp) != f_size) {
+		fread(&x, sizeof(int), 1, fp);
+		fread(&y, sizeof(int), 1, fp);
+		fread(&len, sizeof(int), 1, fp);
+		info = (char *)calloc(len, sizeof(char));
+		fread(info, sizeof(char), len, fp);
+	
+		printf("Read: %d, %d, %s\n", x, y, info);
+
+		if(x < (*root)->xMin || x > (*root)->xMax || y < (*root)->yMin || y > (*root)->yMax) {
+			printf("File has been damaged!\n");
+			free(info);
+			return 1;
+		}
+
+		int ae = add_el((*root), x, y, *capacity, info);
+		printf("AE: %d\n", ae);
+	}
+
+	printf("x0 %d\n", (*root)->point[0]->x);
+	return 0;
+
 }
 
 int dialog(const char *msgs[], int N) {
@@ -161,7 +269,7 @@ int dialog(const char *msgs[], int N) {
 
 int main () {
     int rc, n, size, capacity;
-    Quadrant *root;
+    Quadrant **root;
 
     while (1) {
         printf("This is QUADtree program.\n\
@@ -178,23 +286,30 @@ Keys are from -SIZE div 2 to SIZE div(top top)2 - 1\n");
             if (size == 0 || capacity == 0) 
                 continue;
 
-            root = create(size, capacity);
+            *root = create(size, capacity);
             printf("New tree was created\n");
-            printf("Addr :%p\n", root);
+            printf("Addr :%p\n", *root);
             break;
 
         }
         else {
-            break;
+        	if (D_Load(root, &size, &capacity) == 0)
+            	break;
         }
     }
 
     while (rc = dialog(msgs, NMsgs)) {
         if (rc == 1) {
-            D_Add(root, size, capacity);
+            D_Add(*root, size, capacity);
+        }
+        else if(rc == 3) {
+        	D_Delete(*root, size, capacity);
         }
         else if(rc == 4) {
-        	D_Show(root, size, capacity);
+        	D_Show(*root, size, capacity, 0);
+        }
+        else if(rc == 5) {
+        	D_Save(*root, size, capacity);
         }
     }
 }
