@@ -78,7 +78,7 @@ int NMsgs = sizeof(msgs) / sizeof(msgs[0]);
 
 int D_Create(),
     D_Add(Quadrant *, int, int),
-    D_Find(),
+    D_Find(Quadrant *, int, int),
     D_Delete(Quadrant *, int, int),
     D_Show();
 
@@ -110,7 +110,7 @@ int D_Add(Quadrant *root, int size, int capacity) {
 
 }
 
-int D_Find() {
+int D_Find(Quadrant *root, int size, int capacity) {
     int n, x, y;
     printf("Keys are integers (%d ÷ %d)\nInput X-key of searching element:\n", -size/2, - size / 2 + size - 1);
     get_Int(&x, 0);
@@ -127,7 +127,15 @@ int D_Find() {
     	return 1;
     }
 
-    
+    SearchRes result = search(root, x, y, capacity);
+    if (result.owner == NULL) {
+    	printf("Not found!\n");
+    	return 1;
+    }
+    else {
+    	printf("Result info: %s\n", result.owner->point[result.place]->info);
+    	return 0;
+    }
 }
 
 int D_Delete(Quadrant *root, int size, int capacity) {
@@ -394,6 +402,9 @@ Keys are from -SIZE div 2 to SIZE div(top top)2 - 1\n");
     while (rc = dialog(msgs, NMsgs)) {
         if (rc == 1) {
             D_Add(*root, size, capacity);
+        }
+        else if(rc == 2) {
+        	D_Find(*root, size, capacity);
         }
         else if(rc == 3) {
         	D_Delete(*root, size, capacity);
