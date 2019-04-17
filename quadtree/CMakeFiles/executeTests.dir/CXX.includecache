@@ -1,0 +1,22 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/danila/source/labs/labs2sem/quadtree/tests.cpp
+stdio.h
+-
+string.h
+-
+stdlib.h
+-
+tree.c
+/home/danila/source/labs/labs2sem/quadtree/tree.c
+gtest/gtest.h
+-
+
+/home/danila/source/labs/labs2sem/quadtree/tree.c
+

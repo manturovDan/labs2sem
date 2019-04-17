@@ -104,8 +104,12 @@ int D_Add(Quadrant *root, int size, int capacity) {
     printf("Input information:\n");
     info = getStr();
 
-    if (add_el(root, x, y, capacity, info) == 1) {
+    int add = add_el(root, x, y, capacity, info);
+    if (add == 1) {
     	printf("Element has been added!\n");
+    }
+    else if (add == -1) {
+    	return -1;
     }
 
 }
@@ -251,7 +255,7 @@ int D_Load(Quadrant **root, int *size, int *capacity) {
 		info = (char *)calloc(len, sizeof(char));
 		fread(info, sizeof(char), len, fp);
 	
-		printf("Read: %d, %d, %s\n", x, y, info);
+		//printf("Read: %d, %d, %s\n", x, y, info);
 
 		if(x < (*root)->xMin || x > (*root)->xMax || y < (*root)->yMin || y > (*root)->yMax) {
 			printf("File has been damaged!\n");
@@ -260,10 +264,12 @@ int D_Load(Quadrant **root, int *size, int *capacity) {
 		}
 
 		int ae = add_el((*root), x, y, *capacity, info);
-		printf("AE: %d\n", ae);
+		if(ae == -1) {
+			return -1;
+		}
 	}
 
-	printf("x0 %d\n", (*root)->point[0]->x);
+	//printf("x0 %d\n", (*root)->point[0]->x);
 	free(fileName);
 	fclose(fp);
 	return 0;
@@ -394,14 +400,26 @@ Keys are from -SIZE div 2 to SIZE div(top top)2 - 1\n");
 
         }
         else {
-        	if (D_Load(root, &size, &capacity) == 0)
+        	int load = D_Load(root, &size, &capacity);
+        	if (load== 0)
             	break;
+            else if (load == -1) {
+            	D_DelTree(*root, size, capacity);
+    			free(root);
+    			printf("No memory");
+    			exit(0);
+            }
         }
     }
 
     while (rc = dialog(msgs, NMsgs)) {
         if (rc == 1) {
-            D_Add(*root, size, capacity);
+            if(D_Add(*root, size, capacity) == -1) {
+            	D_DelTree(*root, size, capacity);
+    			free(root);
+    			printf("No memory");
+    			exit(0);
+            }
         }
         else if(rc == 2) {
         	D_Find(*root, size, capacity);

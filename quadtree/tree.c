@@ -172,7 +172,10 @@ int add_el (Quadrant *root, int x, int y, int capacity, char *info) {
 		tofill->busy++;
 		for (int i = 0; i < capacity; i++) {
 			if(tofill->point[i] == NULL) {
-				tofill->point[i] = (Item *)calloc(1, sizeof(Item));
+				tofill->point[i] = (Item *)calloc(1, sizeof(Item));\
+				if (tofill->point[i] == NULL) {
+					return -1;
+				}
 				tofill->point[i]->x = x;
 				tofill->point[i]->y = y;
 				tofill->point[i]->info = info;
@@ -207,7 +210,6 @@ SearchRes find_successor(Quadrant *ancentor, int capacity) {
 			}
 		}
 
-		printf("III: %d\n", i);
 		if (successor.owner->child[i]->child[0] == NULL) {
 			for (int k = 0; k < capacity; k++) {
 				if(successor.owner->child[i]->point[k] != NULL) {
@@ -246,7 +248,6 @@ int delete_el(Quadrant *root, int size, int capacity, int x, int y) {
 		free(victim.owner->point[victim.place]->info);
 		free(victim.owner->point[victim.place]);
 		SearchRes successor = find_successor(victim.owner, capacity);
-		printf("Successor: %s\n", successor.owner->point[successor.place]->info);
 		victim.owner->point[victim.place] = successor.owner->point[successor.place];
 		successor.owner->point[successor.place] = NULL;
 		successor.owner->busy--;
