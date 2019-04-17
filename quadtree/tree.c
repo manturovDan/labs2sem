@@ -314,3 +314,25 @@ int delBTree(bItem *bRoot) {
 	delBTree(bRoot->right);
 	free(bRoot);
 }
+
+int delTree(Quadrant *current, int size, int capacity) {
+	for (int i = 0; i < capacity; i++) {
+		if (current->point[i] != NULL) {
+			free(current->point[i]->info);
+			free(current->point[i]);
+		}
+	}
+	free(current->point);
+
+	if(current->child[0] == NULL) {
+		free(current);
+		return 0;
+	}
+	else {
+		delTree(current->child[0], size, capacity);
+		delTree(current->child[1], size, capacity);
+		delTree(current->child[2], size, capacity);
+		delTree(current->child[3], size, capacity);
+		free(current);
+	}
+}

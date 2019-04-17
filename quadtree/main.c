@@ -240,6 +240,8 @@ int D_Load(Quadrant **root, int *size, int *capacity) {
 	}
 
 	printf("x0 %d\n", (*root)->point[0]->x);
+	free(fileName);
+	fclose(fp);
 	return 0;
 
 }
@@ -311,6 +313,10 @@ int D_ShowRange(Quadrant *root, int size, int capacity) {
     }
 
     showRect(root, size, capacity, xMin, xMax, yMin, yMax);
+}
+
+int D_DelTree(Quadrant *root, int size, int capacity) {
+	delTree(root, size, capacity);
 }
 
 int dialog(const char *msgs[], int N) {
@@ -389,4 +395,7 @@ Keys are from -SIZE div 2 to SIZE div(top top)2 - 1\n");
         	D_ShowRange(*root, size, capacity);
         }
     }
+
+    D_DelTree(*root, size, capacity);
+    free(root);
 }
