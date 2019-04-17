@@ -61,7 +61,7 @@ int born (Quadrant *parent, int capacity) {
 	parent->child[3]->yMin = parent->child[0]->yMax + 1;
 	parent->child[3]->yMax = parent->yMax;
 
-	printf("\
+	/*printf("\
 			Parent: x %d - %d; y %d - %d\n\
 			Q0: x %d - %d; y %d - %d\n\
 			Q1: x %d - %d; y %d - %d\n\
@@ -75,7 +75,7 @@ int born (Quadrant *parent, int capacity) {
 										parent->child[2]->xMin, parent->child[2]->xMax,
 										parent->child[2]->yMin, parent->child[2]->yMax,
 										parent->child[3]->xMin, parent->child[3]->xMax,
-										parent->child[3]->yMin, parent->child[3]->yMax);
+										parent->child[3]->yMin, parent->child[3]->yMax);*/
 
 	return 0;
 }
@@ -87,7 +87,6 @@ SearchRes search(Quadrant *root, int x, int y, int capacity) {
 		sector = -1;
 		for (it = 0; it < capacity; it++) {
 			if(root->point[it] != NULL && root->point[it]->x == x && root->point[it]->y == y) {
-				printf("found\n");
 				res.owner = root;
 				res.place = it;
 				return res;
@@ -139,7 +138,6 @@ Quadrant *search_place(Quadrant *root, int x, int y, int capacity) {
 				break;
 			}
 		}
-		printf("s: %d\n", s);
 		root = root->child[s];
 	}
 	

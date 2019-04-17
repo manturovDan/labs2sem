@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "tree.c"
-//#include <time.h>
+#include <time.h>
 
 int get_Int(int *a, int nat) {
     int n;
@@ -69,14 +69,16 @@ char *getStr() {
 }
 
 int main () {
-	int n, steps, size, capacity;
-	Quadrant **root;
+	int n, steps, size, capacity, countEls;
+	Quadrant **root = (Quadrant **)calloc(1, sizeof(Quadrant *));
 
 	while (1) {
 		printf("This is program for timing QUADtree.\nInput size of testing tree:\n");
 		n = get_nInt(&size);
 		printf("Input capacity of one Quadrant:\n");
 		n = get_nInt(&capacity);
+		printf("Input count of added elements:\n");
+		n = get_nInt(&countEls);
 		printf("Input count of checks:\n");
 		n = get_nInt(&steps);
 
@@ -88,12 +90,12 @@ int main () {
         break;
 	}
 
-	/*clock_t first, last;
-	srand(time(NULL));*/
+	clock_t first, tour, last;
+	srand(time(NULL));
 
 	while(steps-- > 0) {
 		int added = 0;
-		for (int i = 0; i < size; i++) {
+		for (int i = 0; i < countEls; i++) {
 			int x, y;
 			if (rand() % 2 == 0) { //minus
 				x = - (rand() % size/2);
@@ -109,18 +111,16 @@ int main () {
 				y = (rand() % size / 2) - 1;
 			}
 
-			//char test[] = "test";
 			char *testStr = (char *)calloc(5, sizeof(char));
 			strcpy(testStr, "test");
-			printf("[%d, %d]", x, y);
-
-			//if (add_el(*root, x, y, capacity, testStr) == 0) {
-		    //	added++;
-		    //}
+			
+			if (add_el(*root, x, y, capacity, testStr) == 0) {
+		    	added++;
+		    }
 		}
 
-		//first = clock();
+		first = clock();
 
-		printf("Test: %d; Added: %d; Time: \n", steps, added);
+		printf("Test: %d; Added: %d; Time: %ld\n\n", steps, added, first);
 	}
 }

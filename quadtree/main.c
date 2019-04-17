@@ -111,7 +111,23 @@ int D_Add(Quadrant *root, int size, int capacity) {
 }
 
 int D_Find() {
-    printf("test\n");
+    int n, x, y;
+    printf("Keys are integers (%d ÷ %d)\nInput X-key of searching element:\n", -size/2, - size / 2 + size - 1);
+    get_Int(&x, 0);
+    if(x < - size / 2 || x > - size / 2 + size - 1)
+    {
+    	printf("Error! Input key in correct interval!\n");
+    	return 1;
+    }
+    printf("Input Y-key:\n");
+    get_Int(&y, 0);
+    if(y < - size / 2 || y > - size / 2 + size - 1)
+    {
+    	printf("Error! Input key in correct interval!\n");
+    	return 1;
+    }
+
+    
 }
 
 int D_Delete(Quadrant *root, int size, int capacity) {
@@ -346,7 +362,7 @@ int dialog(const char *msgs[], int N) {
 
 int main () {
     int rc, n, size, capacity;
-    Quadrant **root;
+    Quadrant **root = (Quadrant **)calloc(1, sizeof(Quadrant *));
 
     while (1) {
         printf("This is QUADtree program.\n\
