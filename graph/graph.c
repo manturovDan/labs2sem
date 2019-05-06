@@ -89,5 +89,50 @@ int edge(GraphClutch *gTab, int from, int to) {
 	newCon->name = nto->fNode->name;
 	newCon->dist = calcDist(nfrom->fNode->x, nfrom->fNode->y, nto->fNode->x, nto->fNode->y);
 	nfrom->fNode->nbr = newCon;
+	return 0;
+}
+
+int delete(GraphClutch *gTab, int name) {
+	int tabPlace = hash(name);
+
+	CluItem *cont = gTab->grTab[tabPlace];
+	if(cont == NULL) {
+		return 1;
+	}
+
+	CluItem *last = NULL;
+	int delItm = 0;
+	while(cont != NULL) {
+		if(cont->fNode->name == name) {
+			delItm = 1;
+			break;
+		}
+		last = cont;
+		cont = cont->next;
+	}
+
+	if(delItm == 0)
+		return 2;
+
+	if (last == NULL) { //first elem in clueue list
+		if(cont->next != NULL)
+			gTab->grTab[tabPlace] = cont->next;
+		else 
+			gTab->grTab[tabPlace] = NULL;
+	}
+	else if(cont->next != NULL)
+		last->next = cont->next;
+	
+	Neighbour *nbr = cont->fNode->nbr;
+	free(cont);
+
+	Neighbour *deln;
+	while (nbr != NULL) {
+		deln = nbr;
+		nbr = nbr->next;
+		free(deln);
+	}
+
+	gTab->n--;
 
 }

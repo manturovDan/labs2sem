@@ -140,6 +140,18 @@ int D_Add_Edge(GraphClutch *gTab) {
 
 }
 
+int D_Del(GraphClutch *gTab) {
+	int res, delName;
+	printf("Input name (int) of deliting node\n");
+	res = get_nInt(&delName);
+	if (res == 0) {
+		printf("Error\n");
+		return 1;
+	}
+
+	int del = delete(gTab, delName);
+}
+
 int main() {
 	char *msgs[] = {"0. Quit", "1. Add node to Graph", "2. Add edge to Graph", 
 					"3. Delete node from Graph",
@@ -204,6 +216,9 @@ int main() {
     	}
     	else if(mItem == 2) {
     		D_Add_Edge(&gTab);
+    	}
+    	else if(mItem == 3) {
+    		D_Del(&gTab);
     	}
     	else if(mItem == 5) {
     		D_Show(&gTab);
