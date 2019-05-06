@@ -43,8 +43,22 @@ CluItem *find(GraphClutch *gTab, int name) {
 	return NULL;
 }
 
+CluItem *findCoords(GraphClutch *gTab, float x, float y) {
+	CluItem *cont;
+	for (int i = 0; i < SIZE; i++) {
+		cont = gTab->grTab[i];
+		while (cont != NULL) {
+			if(cont->fNode->x == x && cont->fNode->y == y)
+				return cont;
+			cont = cont->next;
+		}
+	}
+
+	return NULL;
+}
+
 int adding(GraphClutch *gTab, int name, float x, float y) { //returns: 2 - is already exist
-	if (find(gTab, name) != NULL) {
+	if (find(gTab, name) != NULL || findCoords(gTab, x, y) != NULL) {
 		return 2;
 	}
 
@@ -111,7 +125,8 @@ int delete(GraphClutch *gTab, int name) {
 		cont = cont->next;
 	}
 
-	if(delItm == 0)
+	//del delItm
+	if(cont == NULL)
 		return 2;
 
 	if (last == NULL) { //first elem in clueue list
@@ -124,6 +139,7 @@ int delete(GraphClutch *gTab, int name) {
 		last->next = cont->next;
 	
 	Neighbour *nbr = cont->fNode->nbr;
+	free(cont->fNode);
 	free(cont);
 
 	Neighbour *deln;
@@ -135,4 +151,61 @@ int delete(GraphClutch *gTab, int name) {
 
 	gTab->n--;
 
+	for (int i = 0; i < SIZE; i++) {
+		CluItem *cont = gTab->grTab[i];
+		Neighbour *nbr;
+		Neighbour *lnbr = NULL;
+		while (cont != NULL) {
+			nbr = cont->fNode->nbr;
+			while(nbr != NULL) {
+				if(nbr->name == name) {
+					break;
+				}
+				lnbr = nbr;
+				nbr = nbr->next;
+			}
+
+			if(nbr != NULL) {
+				if(last == NULL) {
+					if (nbr->next != NULL)
+						cont->fNode->nbr = nbr->next;
+					else
+						cont->fNode->nbr = NULL;
+				}
+				else if(nbr->next != NULL)
+					lnbr->next = nbr->next;
+
+				free(nbr);
+			}
+
+			cont = cont->next;
+		}
+	}
+
+	return 0;
+}
+
+int clear(GraphClutch *gTab) {
+	CluItem *cont;
+	CluItem *last;
+	for (int i = 0; i < SIZE; i++) {
+		cont = gTab->grTab[i];
+		last = NULL;
+		while(cont != NULL) {
+			last = cont;
+			Neighbour *nbr = cont->fNode->nbr;
+			Neighbour *deln;
+			while(nbr != NULL) {
+				deln = nbr;
+				free(deln);
+				nbr = nbr->next;
+			}
+
+			free(last->fNode);
+			free(last);
+			cont = cont->next;
+		}
+	}
+
+	return 0;
 }

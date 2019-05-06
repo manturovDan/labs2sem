@@ -3,7 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 #include "graph.c"
+#include "fileWork.c"
 
 int get_Num(int *a, int nat) { //nat 1 if need natural number (>= 0)
     int n;
@@ -69,6 +71,39 @@ int get_Float(float *a, int bez) { // bez 1 if we need >= number
     return n < 0 ? 0 : 1;
 }
 
+char *getStr() {
+    char buf[81];
+    char *ptr = (char *)calloc(1, sizeof(char));
+    if (ptr == NULL) {
+        printf("No memory");
+        exit(0);
+    }
+    short int n = 0;
+    int len = 0;
+    do {
+        n = scanf("%80[^\n]", buf);
+        if (n < 0) {
+            free(ptr);
+            ptr = NULL;
+        }
+        else if (n == 0) {
+            scanf("%*1[\n]");
+        }
+        else {
+            len += strlen(buf);
+            ptr = (char*)realloc(ptr, len+1);
+            if (ptr == NULL) {
+                printf("No memory");
+                exit(0);
+            }
+            strcat(ptr, buf);
+        }
+
+    } while (n > 0);
+
+    return ptr;
+}
+
 int D_Add(GraphClutch *gTab) {
 	int res, name;
 	float x, y;
@@ -84,7 +119,14 @@ int D_Add(GraphClutch *gTab) {
 	}
 
 	printf("Adding Node\n");
-	return adding(gTab, name, x, y);
+	if(adding(gTab, name, x, y) == 0) {
+		printf("Added Successfully\n");
+		return 0;
+	}
+	else {
+		printf("Element with these name or coordinates is exist\n");
+		return 1;
+	}
 }
 
 int D_Show(GraphClutch *gTab) {
@@ -150,6 +192,90 @@ int D_Del(GraphClutch *gTab) {
 	}
 
 	int del = delete(gTab, delName);
+	if (del == 2) {
+		printf("No element with these name\n");
+		return 1;
+	}
+	
+	printf("Deleted Successfully\n");
+	return 0;
+}
+
+int D_Save(GraphClutch *gTab) {
+	char *fName = NULL;
+	printf("Input name of saveing file\n");
+	fName = getStr();
+	/*
+		save struct:
+		name
+		x
+		y
+		n1
+		n2
+		..
+		nn
+		-1//end of node
+		......
+	*/
+	if (writeGraph(gTab, fName) == 1) {
+		printf("File error!\n");
+		return 1;
+	}
+
+	printf("Graph was recorded Successfully\n");
+	return 0;
+}
+
+int D_Load(GraphClutch *gTab) {
+	char *fName = NULL;
+	printf("Input name of file\n");
+	fName = getStr();
+	if (readGraph(gTab, fName) != 0) {
+		printf("Error of Graph reading\n");
+		//clear
+		return 1;
+	}
+	return 0;
+}
+
+int D_Rand(GraphClutch *gTab) {
+	int gSize;
+	printf("Input size of Graph (1 ÷ 10K)\n");
+	if(get_nInt(&gSize) == 0 || gSize < 1 || gSize > 10000) {
+		printf("Error. Try Again\n");
+		return 1;
+	}
+
+	int name;
+	float x, y;
+	int mxVal = gSize*1000;
+	srand ( time(NULL) );
+
+	int *names = (int *)calloc(gSize, sizeof(int));
+	for (int i = 0; i < gSize; i++) {
+		name = rand() % mxVal;
+		x = (float)(rand() % mxVal - mxVal)/(float)(rand() % mxVal/1000 - mxVal/1000);
+		y = (float)(rand() % mxVal - mxVal)/(float)(rand() % mxVal/1000 - mxVal/1000);
+		if (adding(gTab, name, x, y) != 0) {
+			i--;
+			continue;
+		}
+		names[i] = name;
+	}
+	int nFrom, nTo;
+	for (int i = 0; i < gSize*(rand() % gSize + 1); i++) {
+		nFrom = names[rand() % gSize];
+		nTo = names[rand() % gSize];
+		edge(gTab, nFrom, nTo);
+	}
+
+	free(names);
+}
+
+int D_Clear(GraphClutch *gTab) {
+	int cl = clear(gTab);
+
+	return 0;
 }
 
 int main() {
@@ -159,6 +285,12 @@ int main() {
 					"5. Print Graph", "6. Save Graph in file"};
 
 
+    GraphClutch gTab;
+    gTab.n = 0;
+    for (int i =0; i < SIZE; i++) {
+    	gTab.grTab[i] = NULL;
+    }
+
 	while (1) {
 		printf("This is Graph program. Choose one option\n1. Create Graph by hand\n2. Generate graph\n3. Load Graph from file\n");
 		int mode;
@@ -167,15 +299,17 @@ int main() {
 			continue;
 		}
 		else if(mode == 1) {
-			printf("Create your graph\n");
+			printf("Empty Graph was created\n");
 			break;
 		}
 		else if(mode == 2) {
 			printf("Random graph\n");
+			D_Rand(&gTab);
 			break;
 		}
 		else if(mode == 3) {
 			printf("Load graph\n");
+			D_Load(&gTab);
 			break;
 		}
 		else {
@@ -184,15 +318,8 @@ int main() {
 		}
 
 	}
-    
-    GraphClutch gTab;
-    gTab.n = 0;
-    for (int i =0; i < SIZE; i++) {
-    	gTab.grTab[i] = NULL;
-    }
 
     int mItem;
-    int res;
     while (1) {
     	for (int i = 0; i < sizeof(msgs) / sizeof(msgs[0]); i++) {
     		printf("%s\n", msgs[i]);
@@ -206,13 +333,7 @@ int main() {
     	if (mItem == 0)
     		break;
     	else if (mItem == 1) {
-    		res = D_Add(&gTab);
-    		if (res == 2) {
-    			printf("Element is exist\n");
-    		}
-    		else if(res == 0) {
-    			printf("Successfully added\n");
-    		}
+    		D_Add(&gTab);
     	}
     	else if(mItem == 2) {
     		D_Add_Edge(&gTab);
@@ -223,7 +344,11 @@ int main() {
     	else if(mItem == 5) {
     		D_Show(&gTab);
     	}
+    	else if(mItem == 6) {
+    		D_Save(&gTab);
+    	}
     }
 
-    printf("End of program. Make clearing\n");
+    D_Clear(&gTab);
+    printf("End of program\n");
 }
