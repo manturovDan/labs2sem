@@ -298,9 +298,11 @@ int FloydWarshall(int sz, mCols *matrix) {
 				if (matrix->dist[k-1][i][k-1].inf != 1 && matrix->dist[k-1][k-1][j].inf != 1 && (matrix->dist[k-1][i][j].inf == 1 || matrix->dist[k-1][i][j].dist > matrix->dist[k-1][i][k-1].dist + matrix->dist[k-1][k-1][j].dist)) {
 					matrix->dist[k][i][j].inf = 0;
 					matrix->dist[k][i][j].dist = matrix->dist[k-1][i][k-1].dist + matrix->dist[k-1][k-1][j].dist;
+					matrix->pred[k][i][j] = k-1;
 				}
 				else {
 					matrix->dist[k][i][j] = matrix->dist[k-1][i][j];
+					matrix->pred[k][i][j] = matrix->pred[k-1][i][j];
 				}
 			}
 		}
