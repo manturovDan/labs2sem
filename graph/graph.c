@@ -32,6 +32,14 @@ struct mCols {
 	int **names;
 } typedef mCols;
 
+struct Way {
+	int from;
+	int to;
+	dval dist;
+	Neighbour *road;
+	struct Way *next;
+} typedef Way;
+
 
 int hash(int name) {
 	return name % SIZE;
@@ -283,9 +291,10 @@ int startMatrix(GraphClutch *gTab, mCols *matrix) {
 			
 			nbr = nbr->next;
 		} 
-
-		matrix->dist[0][s][s].inf = 0;
-		matrix->dist[0][s][s].dist = 0;
+		for (int k = 0; k <= gTab->n; k++) {
+			matrix->dist[k][s][s].inf = 0;
+			matrix->dist[k][s][s].dist = 0;
+		}
 	}
 
 	return 0;
@@ -298,7 +307,7 @@ int FloydWarshall(int sz, mCols *matrix) {
 				if (matrix->dist[k-1][i][k-1].inf != 1 && matrix->dist[k-1][k-1][j].inf != 1 && (matrix->dist[k-1][i][j].inf == 1 || matrix->dist[k-1][i][j].dist > matrix->dist[k-1][i][k-1].dist + matrix->dist[k-1][k-1][j].dist)) {
 					matrix->dist[k][i][j].inf = 0;
 					matrix->dist[k][i][j].dist = matrix->dist[k-1][i][k-1].dist + matrix->dist[k-1][k-1][j].dist;
-					matrix->pred[k][i][j] = k-1;
+					matrix->pred[k][i][j] = matrix->pred[k-1][k-1][j];
 				}
 				else {
 					matrix->dist[k][i][j] = matrix->dist[k-1][i][j];
@@ -309,6 +318,44 @@ int FloydWarshall(int sz, mCols *matrix) {
 	}
 
 	return 0;
+}
+
+Way *shortest(int sz, mCols *matrix) {
+	Way *tail;
+	Way *head;
+	tail = NULL;
+	head = NULL;
+	for(int i = 0; i < sz; i++) {
+		for (int j = 0; j < sz; j++) {
+			if (i == j)
+				continue;
+			int deep = sz;
+			int shr = 0;
+			float dist = -1;
+
+			while (deep >= 0 && shr < 3) {
+				if (matrix->dist[deep][i][j].inf == 1 == 0 && (matrix->dist[deep][i][j].dist < dist || dist == -1)){
+					dist = matrix->dist[deep][i][j].dist;
+					Way *itm = (Way*)calloc(1, sizeof(Way));
+					itm->from = i;
+					itm->to = j;
+					itm->dist.inf = 0;
+					itm->dist.dist = dist;
+					if (tail == NULL)
+						tail = itm;
+					else
+						head->next = itm;
+					head = itm;
+					itm->next = NULL;
+					shr--;
+				}
+				
+				deep--;
+			}
+		}
+	}
+
+	return tail;
 }
 
 mCols *fMatrix(GraphClutch *gTab) {

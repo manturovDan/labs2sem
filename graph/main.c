@@ -309,10 +309,21 @@ int Print_Matrix(int sz, mCols *matrix) {
 	}
 }
 
+int Print_Ways(int sz, Way *shrt, mCols *matrix) {
+	while (shrt != NULL) {
+		printf("%d --(%f)--> %d\n", matrix->names[shrt->from][1], shrt->dist.dist, matrix->names[shrt->to][1]);
+		
+		
+		shrt = shrt->next;
+	}
+}
+
 int D_FW(GraphClutch *gTab) {
 	mCols *matrix = fMatrix(gTab);
+	Way *shrtst = shortest(gTab->n, matrix);
 
 	Print_Matrix(gTab->n, matrix);
+	Print_Ways(gTab->n, shrtst, matrix);
 }
 
 int main() {
