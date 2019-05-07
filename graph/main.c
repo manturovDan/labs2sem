@@ -178,6 +178,7 @@ int D_Add_Edge(GraphClutch *gTab) {
 		return 1;
 	}
 
+	printf("Connected successfully\n");
 	return 0;
 
 }
@@ -192,7 +193,7 @@ int D_Del(GraphClutch *gTab) {
 	}
 
 	int del = delete(gTab, delName);
-	if (del == 2) {
+	if (del != 0) {
 		printf("No element with these name\n");
 		return 1;
 	}
@@ -288,7 +289,7 @@ int Print_Matrix(int sz, mCols *matrix) {
 		printf("%d\n", i);
 		for (int j = 0; j < sz; j++) {
 			for (int k = 0; k < sz; k++) {
-				matrix->dist[i][j][k].inf == 0 ? printf("%d ", matrix->dist[i][j][k].dist) : printf("∞ ");
+				matrix->dist[i][j][k].inf == 0 ? printf("%f\t", matrix->dist[i][j][k].dist) : printf("∞\t\t");
 			}
 			printf("\n");
 		}
@@ -300,7 +301,7 @@ int Print_Matrix(int sz, mCols *matrix) {
 		printf("%d\n", i);
 		for (int j = 0; j < sz; j++) {
 			for (int k = 0; k < sz; k++) {
-				printf("%d ", matrix->pred[i][j][k]);
+				matrix->pred[i][j][k] != -1 ? printf("%d\t", matrix->pred[i][j][k]) : printf("Ø\t");
 			}
 			printf("\n");
 		}

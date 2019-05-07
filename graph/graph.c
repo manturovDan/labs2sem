@@ -23,7 +23,7 @@ struct GraphClutch {
 
 struct dval {
 	int inf; //1 or 0
-	int dist; //if int == 0
+	float dist; //if int == 0
 } typedef dval;
 
 struct mCols {
@@ -222,6 +222,16 @@ int clear(GraphClutch *gTab) {
 	return 0;
 }
 
+int idByName(mCols *matrix, int name, int sz) {
+	//TODO QSort, Binsearch
+	for (int i = 0; i < sz; i++) {
+		if(matrix->names[i][1] == name) {
+			return i;
+		}
+	}
+	return -1;
+}
+
 mCols *createMatrix(GraphClutch *gTab) {
 	mCols *repo = (mCols *)calloc(1, sizeof(repo));
 	
@@ -230,6 +240,8 @@ mCols *createMatrix(GraphClutch *gTab) {
 		repo->dist[i] = (dval **)calloc(gTab->n, sizeof(dval *));
 		for (int j = 0; j < gTab->n; j++) {
 			repo->dist[i][j] = (dval *)calloc(gTab->n, sizeof(dval));
+			for (int k = 0; k < gTab->n; k++)
+				repo->dist[i][j][k].inf = 1;
 		}
 	}
 
@@ -238,6 +250,8 @@ mCols *createMatrix(GraphClutch *gTab) {
 		repo->pred[i] = (int **)calloc(gTab->n, sizeof(int *));
 		for (int j = 0; j < gTab->n; j++) {
 			repo->pred[i][j] = (int *)calloc(gTab->n, sizeof(int));
+			for (int k = 0; k < gTab->n; k++)
+				repo->pred[i][j][k] = -1;
 		}
 	}
 
@@ -256,19 +270,48 @@ mCols *createMatrix(GraphClutch *gTab) {
 	return repo;
 }
 
-mCols startMatrix(GraphClutch *gTab, mCols *matrix) {
+int startMatrix(GraphClutch *gTab, mCols *matrix) {
 	for (int s = 0; s < gTab->n; s++) {
-		CluItem *cont = gTab->grTab[s];
-		while (cont != NULL) {
-			//mCols[0][]
+		CluItem *cNode = find(gTab, matrix->names[s][1]);
+		Neighbour *nbr = cNode->fNode->nbr;
+		int id;
+		while (nbr != NULL) {
+			id = idByName(matrix, nbr->name, gTab->n);
+			matrix->dist[0][s][id].inf = 0;
+			matrix->dist[0][s][id].dist = nbr->dist;
+			matrix->pred[0][s][id] = s;
+			
+			nbr = nbr->next;
+		} 
 
-			cont = cont->next;
+		matrix->dist[0][s][s].inf = 0;
+		matrix->dist[0][s][s].dist = 0;
+	}
+
+	return 0;
+}
+
+int FloydWarshall(int sz, mCols *matrix) {
+	for (int k = 1; k <= sz; k++) {
+		for (int i = 0; i < sz; i++) {
+			for (int j = 0; j < sz; j++) {
+				if (matrix->dist[k-1][i][k-1].inf != 1 && matrix->dist[k-1][k-1][j].inf != 1 && (matrix->dist[k-1][i][j].inf == 1 || matrix->dist[k-1][i][j].dist > matrix->dist[k-1][i][k-1].dist + matrix->dist[k-1][k-1][j].dist)) {
+					matrix->dist[k][i][j].inf = 0;
+					matrix->dist[k][i][j].dist = matrix->dist[k-1][i][k-1].dist + matrix->dist[k-1][k-1][j].dist;
+				}
+				else {
+					matrix->dist[k][i][j] = matrix->dist[k-1][i][j];
+				}
+			}
 		}
 	}
+
+	return 0;
 }
 
 mCols *fMatrix(GraphClutch *gTab) {
 	mCols *mtrx = createMatrix(gTab);
-
+	startMatrix(gTab, mtrx);
+	FloydWarshall(gTab->n, mtrx);
 	return mtrx;
 }
