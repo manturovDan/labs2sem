@@ -21,6 +21,18 @@ struct GraphClutch {
 	CluItem *grTab[SIZE];
 } typedef GraphClutch;
 
+struct dval {
+	int inf; //1 or 0
+	int dist; //if int == 0
+} typedef dval;
+
+struct mCols {
+	dval ***dist;
+	int ***pred;
+	int **names;
+} typedef mCols;
+
+
 int hash(int name) {
 	return name % SIZE;
 }
@@ -208,4 +220,55 @@ int clear(GraphClutch *gTab) {
 	}
 
 	return 0;
+}
+
+mCols *createMatrix(GraphClutch *gTab) {
+	mCols *repo = (mCols *)calloc(1, sizeof(repo));
+	
+	repo->dist = (dval ***)calloc(gTab->n+1, sizeof(dval **));
+	for (int i = 0; i < gTab->n+1; i++) {
+		repo->dist[i] = (dval **)calloc(gTab->n, sizeof(dval *));
+		for (int j = 0; j < gTab->n; j++) {
+			repo->dist[i][j] = (dval *)calloc(gTab->n, sizeof(dval));
+		}
+	}
+
+	repo->pred = (int ***)calloc(gTab->n+1, sizeof(int **));
+	for (int i = 0; i < gTab->n+1; i++) {
+		repo->pred[i] = (int **)calloc(gTab->n, sizeof(int *));
+		for (int j = 0; j < gTab->n; j++) {
+			repo->pred[i][j] = (int *)calloc(gTab->n, sizeof(int));
+		}
+	}
+
+	repo->names = (int **)calloc(gTab->n, sizeof(int *));
+	int n = 0;
+	for (int t = 0; t < SIZE; t++) {
+		CluItem *cont = gTab->grTab[t];
+		while (cont != NULL) {
+			repo->names[n] = (int *)calloc(2, sizeof(int));
+			repo->names[n][0] = n;
+			repo->names[n][1] = cont->fNode->name;
+			cont = cont->next;
+			n++;
+		}
+	}
+	return repo;
+}
+
+mCols startMatrix(GraphClutch *gTab, mCols *matrix) {
+	for (int s = 0; s < gTab->n; s++) {
+		CluItem *cont = gTab->grTab[s];
+		while (cont != NULL) {
+			//mCols[0][]
+
+			cont = cont->next;
+		}
+	}
+}
+
+mCols *fMatrix(GraphClutch *gTab) {
+	mCols *mtrx = createMatrix(gTab);
+
+	return mtrx;
 }

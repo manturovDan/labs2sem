@@ -274,8 +274,44 @@ int D_Rand(GraphClutch *gTab) {
 
 int D_Clear(GraphClutch *gTab) {
 	int cl = clear(gTab);
-
 	return 0;
+}
+
+int Print_Matrix(int sz, mCols *matrix) {
+	printf("SIZE: %d\nID, Names\n", sz);
+	for (int t = 0; t < sz; t++) {
+		printf("%d %d\n", matrix->names[t][0], matrix->names[t][1]);
+	}
+
+	printf("\nDistances\n");
+	for (int i = 0; i < sz+1; i++) {
+		printf("%d\n", i);
+		for (int j = 0; j < sz; j++) {
+			for (int k = 0; k < sz; k++) {
+				matrix->dist[i][j][k].inf == 0 ? printf("%d ", matrix->dist[i][j][k].dist) : printf("∞ ");
+			}
+			printf("\n");
+		}
+		printf("\n");
+	}
+
+	printf("Predecessors\n");
+	for (int i = 0; i < sz+1; i++) {
+		printf("%d\n", i);
+		for (int j = 0; j < sz; j++) {
+			for (int k = 0; k < sz; k++) {
+				printf("%d ", matrix->pred[i][j][k]);
+			}
+			printf("\n");
+		}
+		printf("\n");
+	}
+}
+
+int D_FW(GraphClutch *gTab) {
+	mCols *matrix = fMatrix(gTab);
+
+	Print_Matrix(gTab->n, matrix);
 }
 
 int main() {
@@ -340,6 +376,9 @@ int main() {
     	}
     	else if(mItem == 3) {
     		D_Del(&gTab);
+    	}
+    	else if(mItem == 4) {
+    		D_FW(&gTab);
     	}
     	else if(mItem == 5) {
     		D_Show(&gTab);
