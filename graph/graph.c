@@ -21,25 +21,19 @@ struct GraphClutch {
 	CluItem *grTab[SIZE];
 } typedef GraphClutch;
 
-struct dval {
-	int inf; //1 or 0
-	float dist; //if int == 0
-} typedef dval;
+struct Road {
+	int start;
+	int end;
+	float dist;
+	struct Road *last; //last in way
+	struct Road *nextg; //next in list
+} typedef Road;
 
-struct mCols {
-	dval ***dist;
-	int ***pred;
-	int **names;
-} typedef mCols;
-
-struct Way {
-	int from;
-	int to;
-	dval dist;
-	Neighbour *road;
-	struct Way *next;
-} typedef Way;
-
+struct mItm {
+	float **dist;
+	Road **track;
+	int *names;
+} typedef mItm;
 
 int hash(int name) {
 	return name % SIZE;
@@ -78,7 +72,7 @@ CluItem *findCoords(GraphClutch *gTab, float x, float y) {
 }
 
 int adding(GraphClutch *gTab, int name, float x, float y) { //returns: 2 - is already exist
-	if (find(gTab, name) != NULL || findCoords(gTab, x, y) != NULL) {
+	if (find(gTab, name) != NULL || findCoords(gTab, x, y) != NULL) { 
 		return 2;
 	}
 
@@ -230,137 +224,218 @@ int clear(GraphClutch *gTab) {
 	return 0;
 }
 
-int idByName(mCols *matrix, int name, int sz) {
+int idByName(mItm *matrix, int name, int sz) {
 	//TODO QSort, Binsearch
 	for (int i = 0; i < sz; i++) {
-		if(matrix->names[i][1] == name) {
+		if(matrix->names[i] == name) {
 			return i;
 		}
 	}
 	return -1;
 }
 
-mCols *createMatrix(GraphClutch *gTab) {
-	mCols *repo = (mCols *)calloc(1, sizeof(repo));
-	
-	repo->dist = (dval ***)calloc(gTab->n+1, sizeof(dval **));
-	for (int i = 0; i < gTab->n+1; i++) {
-		repo->dist[i] = (dval **)calloc(gTab->n, sizeof(dval *));
+mItm *createMatrix(GraphClutch *gTab) {
+	mItm *repo = (mItm *)calloc(1, sizeof(mItm));
+	repo->dist = (float **)calloc(gTab->n, sizeof(float *));
+	for (int i = 0; i < gTab->n; i++) {
+		repo->dist[i] = (float *)calloc(gTab->n, sizeof(float));
 		for (int j = 0; j < gTab->n; j++) {
-			repo->dist[i][j] = (dval *)calloc(gTab->n, sizeof(dval));
-			for (int k = 0; k < gTab->n; k++)
-				repo->dist[i][j][k].inf = 1;
+			if(i == j) 
+				repo->dist[i][j] = 0;
+			else
+				repo->dist[i][j] = -1;
 		}
 	}
 
-	repo->pred = (int ***)calloc(gTab->n+1, sizeof(int **));
-	for (int i = 0; i < gTab->n+1; i++) {
-		repo->pred[i] = (int **)calloc(gTab->n, sizeof(int *));
-		for (int j = 0; j < gTab->n; j++) {
-			repo->pred[i][j] = (int *)calloc(gTab->n, sizeof(int));
-			for (int k = 0; k < gTab->n; k++)
-				repo->pred[i][j][k] = -1;
-		}
-	}
-
-	repo->names = (int **)calloc(gTab->n, sizeof(int *));
+	repo->names = (int *)calloc(gTab->n, sizeof(int));
 	int n = 0;
 	for (int t = 0; t < SIZE; t++) {
 		CluItem *cont = gTab->grTab[t];
-		while (cont != NULL) {
-			repo->names[n] = (int *)calloc(2, sizeof(int));
-			repo->names[n][0] = n;
-			repo->names[n][1] = cont->fNode->name;
-			cont = cont->next;
+		while(cont != NULL) {
+			repo->names[n] = cont->fNode->name;
 			n++;
+			cont = cont->next;
 		}
 	}
+
+	repo->track = (Road **)calloc(1, sizeof(Road *));
+
 	return repo;
 }
 
-int startMatrix(GraphClutch *gTab, mCols *matrix) {
+int clearMatrix(int sz, mItm *matrix) {
+	for (int i = 0; i < sz; i++) {
+		free(matrix->dist[i]);
+	}
+	free(matrix->dist);
+	free(matrix->names);
+	Road *step = *matrix->track;
+	while (step != NULL) { 
+		Road *del = step;
+		step = step->nextg;
+		free(del);
+	}
+
+	free(matrix->track);
+	free(step);
+	free(matrix);
+	return 0;
+}
+
+int clearRoad(int sz, Road ****way) {
+	for(int i = 0; i < sz; i++) {
+		for (int j = 0; j < sz; j++) {
+			free(way[i][j]);
+		}
+		free(way[i]);
+	}
+	free(way);
+}
+
+int startMatrix(GraphClutch *gTab, mItm *matrix) {
 	for (int s = 0; s < gTab->n; s++) {
-		CluItem *cNode = find(gTab, matrix->names[s][1]);
+		CluItem *cNode = find(gTab, matrix->names[s]);
 		Neighbour *nbr = cNode->fNode->nbr;
 		int id;
 		while (nbr != NULL) {
 			id = idByName(matrix, nbr->name, gTab->n);
-			matrix->dist[0][s][id].inf = 0;
-			matrix->dist[0][s][id].dist = nbr->dist;
-			matrix->pred[0][s][id] = s;
-			
+			matrix->dist[s][id] = nbr->dist;
 			nbr = nbr->next;
-		} 
-		for (int k = 0; k <= gTab->n; k++) {
-			matrix->dist[k][s][s].inf = 0;
-			matrix->dist[k][s][s].dist = 0;
 		}
+
+		matrix->dist[s][s] = 0;
 	}
 
 	return 0;
 }
 
-int FloydWarshall(int sz, mCols *matrix) {
-	for (int k = 1; k <= sz; k++) {
-		for (int i = 0; i < sz; i++) {
-			for (int j = 0; j < sz; j++) {
-				if (matrix->dist[k-1][i][k-1].inf != 1 && matrix->dist[k-1][k-1][j].inf != 1 && (matrix->dist[k-1][i][j].inf == 1 || matrix->dist[k-1][i][j].dist > matrix->dist[k-1][i][k-1].dist + matrix->dist[k-1][k-1][j].dist)) {
-					matrix->dist[k][i][j].inf = 0;
-					matrix->dist[k][i][j].dist = matrix->dist[k-1][i][k-1].dist + matrix->dist[k-1][k-1][j].dist;
-					matrix->pred[k][i][j] = matrix->pred[k-1][k-1][j];
-				}
-				else {
-					matrix->dist[k][i][j] = matrix->dist[k-1][i][j];
-					matrix->pred[k][i][j] = matrix->pred[k-1][i][j];
-				}
+int checkInTrack(Road *last, int node) {
+	while (last != NULL) {
+		if (last->end == node) 
+			return 1;
+		last = last->last;
+	}
+
+	return 0;
+}
+
+int deep(Road *last, mItm *matrix, GraphClutch *gTab) {
+	for (int j = 0; j < gTab->n; j++) {
+		if (matrix->dist[last->end][j] > 0 && checkInTrack(last, j) == 0) {
+			Road *way = (Road *)calloc(1, sizeof(Road));
+			if (way == NULL) {
+				clearMatrix(gTab->n, matrix);
+				printf("Memory error!\n");
+				exit(0);
 			}
+			way->last = last;
+			way->start = last->start;
+			way->end = j;
+			way->dist = last->dist + matrix->dist[last->end][j];
+			if (matrix->track != NULL) 
+				way->nextg = *matrix->track;
+			*matrix->track = way;
+			deep(way, matrix, gTab);
 		}
 	}
 
 	return 0;
 }
 
-Way *shortest(int sz, mCols *matrix) {
-	Way *tail;
-	Way *head;
-	tail = NULL;
-	head = NULL;
-	for(int i = 0; i < sz; i++) {
+int runSearch(mItm *matrix, GraphClutch *gTab) {
+	for (int i = 0; i < gTab->n; i++) {
+		Road *first = (Road *)calloc(1, sizeof(Road));
+		first->start = i;
+		first->end = i;
+		first->dist = 0;
+		first->last = NULL;
+		first->nextg = *matrix->track;
+		deep(first, matrix, gTab);
+		free(first);
+	}
+	return 0;
+}
+
+Road ****optMx(int sz) {
+	Road ****opt = (Road ****)calloc(sz, sizeof(Road ***));
+	for (int i = 0; i < sz; i++) {
+		opt[i] = (Road ***)calloc(sz, sizeof(Road **));
 		for (int j = 0; j < sz; j++) {
-			if (i == j)
-				continue;
-			int deep = sz;
-			int shr = 0;
-			float dist = -1;
-
-			while (deep >= 0 && shr < 3) {
-				if (matrix->dist[deep][i][j].inf == 1 == 0 && (matrix->dist[deep][i][j].dist < dist || dist == -1)){
-					dist = matrix->dist[deep][i][j].dist;
-					Way *itm = (Way*)calloc(1, sizeof(Way));
-					itm->from = i;
-					itm->to = j;
-					itm->dist.inf = 0;
-					itm->dist.dist = dist;
-					if (tail == NULL)
-						tail = itm;
-					else
-						head->next = itm;
-					head = itm;
-					itm->next = NULL;
-					shr--;
-				}
-				
-				deep--;
+			opt[i][j] = (Road **)calloc(3, sizeof(Road *));
+			for (int k = 0; k < 3; k++) {
+				opt[i][j][k] = NULL;
 			}
 		}
 	}
 
-	return tail;
+	return opt;
 }
 
-mCols *fMatrix(GraphClutch *gTab) {
-	mCols *mtrx = createMatrix(gTab);
+int findMax3(Road **ways) {
+	int mval = 0;
+	int mx = -1;
+	for (int i = 0; i < 3; i++) {
+		if(ways[i]->dist > mval) {
+			mval = ways[i]->dist;
+			mx = i;
+		}
+	}
+
+	return mx;
+}
+
+int getOptimal(Road ****roads, mItm *matrix, GraphClutch *gTab) {
+	Road *step = *matrix->track;
+	while (step != NULL) {
+		int toRec = -1;
+		for(int k = 0; k < 3; k++) {
+			if(roads[step->start][step->end][k] == NULL) {\
+				toRec = k;
+				break;
+			}
+		}
+
+		if(toRec == -1) {
+			int mx = findMax3(roads[step->start][step->end]);
+			if (roads[step->start][step->end][mx]->dist > step->dist)
+				toRec = mx;
+		}
+
+		if (toRec != -1) {
+			roads[step->start][step->end][toRec] = step;
+		}
+
+		step = step->nextg;
+	}
+
+	for (int i = 0; i < gTab->n; i++) {
+		for(int j = 0; j < gTab->n; j++) {
+			if(roads[i][j][0] == NULL || roads[i][j][1] == NULL){
+				continue;
+			} 
+
+			if (roads[i][j][2] != NULL) {
+				int mx = findMax3(roads[i][j]);
+				Road *move = roads[i][j][2];
+				roads[i][j][2] = roads[i][j][mx];
+				roads[i][j][mx] = move;
+			}
+
+			if(roads[i][j][0] > roads[i][j][1]) {
+				Road *move = roads[i][j][1];
+				roads[i][j][1] = roads[i][j][0];
+				roads[i][j][0] = move;
+			}
+
+			
+		}
+	}
+	return 0;
+}
+
+mItm *fMatrix(GraphClutch *gTab) {
+	mItm *mtrx = createMatrix(gTab);
 	startMatrix(gTab, mtrx);
-	FloydWarshall(gTab->n, mtrx);
+	runSearch(mtrx, gTab);	
 	return mtrx;
 }

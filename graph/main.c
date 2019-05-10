@@ -264,7 +264,7 @@ int D_Rand(GraphClutch *gTab) {
 		names[i] = name;
 	}
 	int nFrom, nTo;
-	for (int i = 0; i < gSize*(rand() % gSize + 1); i++) {
+	for (int i = 0; i < gSize*(rand() % gSize/10 + 1); i++) {
 		nFrom = names[rand() % gSize];
 		nTo = names[rand() % gSize];
 		edge(gTab, nFrom, nTo);
@@ -278,52 +278,83 @@ int D_Clear(GraphClutch *gTab) {
 	return 0;
 }
 
-int Print_Matrix(int sz, mCols *matrix) {
+int Print_Matrix(int sz, mItm *matrix) {
 	printf("SIZE: %d\nID, Names\n", sz);
 	for (int t = 0; t < sz; t++) {
-		printf("%d %d\n", matrix->names[t][0], matrix->names[t][1]);
+		printf("%d %d\n", t, matrix->names[t]);
 	}
 
 	printf("\nDistances\n");
-	for (int i = 0; i < sz+1; i++) {
-		printf("%d\n", i);
-		for (int j = 0; j < sz; j++) {
-			for (int k = 0; k < sz; k++) {
-				matrix->dist[i][j][k].inf == 0 ? printf("%f\t", matrix->dist[i][j][k].dist) : printf("∞\t\t");
-			}
-			printf("\n");
+	for (int j = 0; j < sz; j++) {
+		for (int k = 0; k < sz; k++) {
+			matrix->dist[j][k] != -1 ? printf("%f\t", matrix->dist[j][k]) : printf("∞\t\t");
 		}
 		printf("\n");
 	}
+	printf("\n");
 
-	printf("Predecessors\n");
-	for (int i = 0; i < sz+1; i++) {
-		printf("%d\n", i);
-		for (int j = 0; j < sz; j++) {
-			for (int k = 0; k < sz; k++) {
-				matrix->pred[i][j][k] != -1 ? printf("%d\t", matrix->pred[i][j][k]) : printf("Ø\t");
-			}
-			printf("\n");
-		}
-		printf("\n");
-	}
+	return 0;
 }
 
-int Print_Ways(int sz, Way *shrt, mCols *matrix) {
-	while (shrt != NULL) {
-		printf("%d --(%f)--> %d\n", matrix->names[shrt->from][1], shrt->dist.dist, matrix->names[shrt->to][1]);
-		
-		
-		shrt = shrt->next;
+int Print_Ways(GraphClutch *gTab, mItm *matrix) {
+	Road *step = *matrix->track;
+	while (step != NULL) {
+		printf("%d-%d |%f| ", step->start, step->end, step->dist);
+		Road *prev = step->last;
+		printf("%d", step->end);
+		while (prev != NULL) {
+			printf(" <-- %d", prev->end);
+			prev = prev->last;
+		}
+		printf("\n");
+		step = step->nextg;
 	}
+
+	return 0;
+}
+
+int Print_Shortest_Mx(int sz, mItm *matrix, Road ****wysr) {
+	printf("Shortest Ways:\n Start \t End \t Dist \t\t Way\n");
+	for(int i = 0; i < sz; i++) {
+		for (int j = 0; j < sz; j++) {
+			int p = 0;
+			for(int k = 0; k < 3; k++) {
+				if(wysr[i][j][k] == NULL)
+					break;
+
+				p = 1;
+				printf("%d\t%d\t|%f|\t", matrix->names[wysr[i][j][k]->start], matrix->names[wysr[i][j][k]->end], wysr[i][j][k]->dist);
+				Road *prev = wysr[i][j][k]->last;
+				printf("%d", matrix->names[wysr[i][j][k]->end]);
+				while (prev != NULL) {
+					printf(" <-- %d", matrix->names[prev->end]);
+					prev = prev->last;
+				}
+				printf("\n");
+			}
+			if (p == 1)
+				printf("\n");
+		}
+	}
+	return 0;
+}
+
+int Clear_Mx(int sz, mItm *matrix, Road ****wysr) {
+	clearMatrix(sz, matrix);
+	clearRoad(sz, wysr);
+
+	return 0;
 }
 
 int D_FW(GraphClutch *gTab) {
-	mCols *matrix = fMatrix(gTab);
-	Way *shrtst = shortest(gTab->n, matrix);
-
-	Print_Matrix(gTab->n, matrix);
-	Print_Ways(gTab->n, shrtst, matrix);
+	mItm *matrix = fMatrix(gTab);
+	//Print_Matrix(gTab->n, matrix);
+	//Print_Ways(gTab, matrix); //DEBUG
+	Road ****shMx = optMx(gTab->n);
+	getOptimal(shMx, matrix, gTab);
+	Print_Shortest_Mx(gTab->n, matrix, shMx);
+	Clear_Mx(gTab->n, matrix, shMx);
+	return 0;
 }
 
 int main() {

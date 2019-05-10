@@ -20,6 +20,7 @@ int writeGraph(GraphClutch *gTab, char *fName) {
 	}
 
 	fclose(fp);
+	free(fName);
 	return 0;
 }
 
@@ -66,5 +67,6 @@ int readGraph(GraphClutch *gTab, char *fName) {
 	}
 
 	fclose(fp);
+	free(fName);
 	return 0;
 }
