@@ -1,3 +1,5 @@
+#define SIZE 100
+
 struct Neighbour {
 	int name;
 	float dist;
@@ -120,7 +122,7 @@ int edge(GraphClutch *gTab, int from, int to) {
 	return 0;
 }
 
-int delete(GraphClutch *gTab, int name) {
+int deleteEl(GraphClutch *gTab, int name) {
 	int tabPlace = hash(name);
 
 	CluItem *cont = gTab->grTab[tabPlace];

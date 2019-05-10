@@ -1,4 +1,3 @@
-#define SIZE 100
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -192,7 +191,7 @@ int D_Del(GraphClutch *gTab) {
 		return 1;
 	}
 
-	int del = delete(gTab, delName);
+	int del = deleteEl(gTab, delName);
 	if (del != 0) {
 		printf("No element with these name\n");
 		return 1;
@@ -347,13 +346,18 @@ int Clear_Mx(int sz, mItm *matrix, Road ****wysr) {
 }
 
 int D_FW(GraphClutch *gTab) {
+	clock_t first, last;
+	srand(time(NULL));
+	first = clock();
 	mItm *matrix = fMatrix(gTab);
 	//Print_Matrix(gTab->n, matrix);
 	//Print_Ways(gTab, matrix); //DEBUG
 	Road ****shMx = optMx(gTab->n);
 	getOptimal(shMx, matrix, gTab);
+	last = clock();
 	Print_Shortest_Mx(gTab->n, matrix, shMx);
 	Clear_Mx(gTab->n, matrix, shMx);
+	printf("Timeing: %ld\n", last - first);
 	return 0;
 }
 

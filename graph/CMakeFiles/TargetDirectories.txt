@@ -1,0 +1,3 @@
+/home/danila/source/labs/labs2sem/graph/CMakeFiles/rebuild_cache.dir
+/home/danila/source/labs/labs2sem/graph/CMakeFiles/executeTests.dir
+/home/danila/source/labs/labs2sem/graph/CMakeFiles/edit_cache.dir

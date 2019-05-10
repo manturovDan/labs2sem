@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/danila/source/labs/labs2sem/graph/fileWork.c
+
+/home/danila/source/labs/labs2sem/graph/graph.c
+
+/home/danila/source/labs/labs2sem/graph/tests.cpp
+stdio.h
+-
+string.h
+-
+stdlib.h
+-
+math.h
+-
+graph.c
+/home/danila/source/labs/labs2sem/graph/graph.c
+fileWork.c
+/home/danila/source/labs/labs2sem/graph/fileWork.c
+gtest/gtest.h
+-
+
