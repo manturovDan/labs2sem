@@ -7,6 +7,8 @@
 #IncludeRegexTransform: 
 
 /home/danila/source/labs/labs2sem/graph/fileWork.c
+errno.h
+-
 
 /home/danila/source/labs/labs2sem/graph/graph.c
 

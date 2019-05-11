@@ -1,3 +1,5 @@
+#include <errno.h>
+
 int writeGraph(GraphClutch *gTab, char *fName) {
 	FILE *fp;
 	fp = fopen(fName, "wt");
@@ -27,6 +29,7 @@ int writeGraph(GraphClutch *gTab, char *fName) {
 int readGraph(GraphClutch *gTab, char *fName) {
 	FILE *fp;
 	if ((fp = fopen(fName, "rt")) == 0) {
+		printf("Error: %s\n", strerror(errno));
 		return 1;
 	}
 
