@@ -153,6 +153,9 @@ int deleteEl(GraphClutch *gTab, int name) {
 	}
 	else if(cont->next != NULL)
 		last->next = cont->next;
+	else {
+		last->next = NULL;
+	}
 	
 	Neighbour *nbr = cont->fNode->nbr;
 	free(cont->fNode);
