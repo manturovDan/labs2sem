@@ -687,6 +687,44 @@ TEST (Shortest, sh1) {
 	ASSERT_EQ(n, 1);
 }
 
+TEST(EmptyTest, et1) {
+	GraphClutch gTab;
+    gTab.n = 0;
+    for (int i =0; i < SIZE; i++) {
+    	gTab.grTab[i] = NULL;
+    }
+
+    int d1 = deleteEl(&gTab, 100);
+    ASSERT_NE(d1, 0);
+    CluItem *f1 = findCoords(&gTab, 1000, 2000);
+	int n = 0;
+	if (f1 == NULL)
+		n = 1;
+	ASSERT_EQ(n, 1);
+
+	mItm *matrix = fMatrix(&gTab);
+	//Print_Matrix(gTab.n, matrix);
+	Road ****shMx = optMx(gTab.n);
+	getOptimal(shMx, matrix, &gTab);
+
+	float summ = 0;
+	int nulls = 0;
+	for (int i = 0; i < gTab.n; i++) {
+		for (int j = 0; j < gTab.n; j++) {
+			for (int k = 0; k < 3; k++) {
+				if (shMx[i][j][k] == NULL)
+					nulls++;
+				else
+					summ += shMx[i][j][k]->dist;
+			}
+		}
+	}
+
+	ASSERT_EQ(nulls, 0);
+	ASSERT_FLOAT_EQ(summ, 0);
+
+}
+
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
