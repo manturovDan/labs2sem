@@ -325,11 +325,11 @@ int Print_Shortest_Mx(int sz, mItm *matrix, Road ****wysr) {
 				printf("%d\t%d\t|%f|\t", matrix->names[wysr[i][j][k]->start], matrix->names[wysr[i][j][k]->end], wysr[i][j][k]->dist);
 				Road *prev = wysr[i][j][k]->last;
 				printf("%d", matrix->names[wysr[i][j][k]->end]);
-				while (prev != NULL) {
+				while (prev->last != NULL) {
 					printf(" <-- %d", matrix->names[prev->end]);
 					prev = prev->last;
 				}
-				printf("\n");
+				printf(" <-- %d\n", matrix->names[wysr[i][j][k]->start]);
 			}
 			if (p == 1)
 				printf("\n");

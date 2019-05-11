@@ -394,7 +394,7 @@ int getOptimal(Road ****roads, mItm *matrix, GraphClutch *gTab) {
 	while (step != NULL) {
 		int toRec = -1;
 		for(int k = 0; k < 3; k++) {
-			if(roads[step->start][step->end][k] == NULL) {\
+			if(roads[step->start][step->end][k] == NULL) {
 				toRec = k;
 				break;
 			}
