@@ -18,6 +18,24 @@ int realCount(GraphClutch *gTab) {
 	return n;
 }
 
+int Print_Matrix(int sz, mItm *matrix) {
+	printf("SIZE: %d\nID, Names\n", sz);
+	for (int t = 0; t < sz; t++) {
+		printf("%d %d\n", t, matrix->names[t]);
+	}
+
+	printf("\nDistances\n");
+	for (int j = 0; j < sz; j++) {
+		for (int k = 0; k < sz; k++) {
+			matrix->dist[j][k] != -1 ? printf("%f\t", matrix->dist[j][k]) : printf("∞\t\t");
+		}
+		printf("\n");
+	}
+	printf("\n");
+
+	return 0;
+}
+
 int D_Show(GraphClutch *gTab) {
 	int emp = 0;
 	for (int i = 0; i < SIZE; i++) {
@@ -539,6 +557,134 @@ TEST (DeleteTest, dtest1) {
 			cont2 = cont2->next;
 		}
 	}
+}
+
+TEST (matrixGraph, mx1) {
+	GraphClutch gTab;
+    gTab.n = 0;
+    for (int i =0; i < SIZE; i++) {
+    	gTab.grTab[i] = NULL;
+    }
+
+	char *fName = (char *)calloc(20, sizeof(char));
+	strcpy(fName, "tests/e.txt");
+	int read = readGraph(&gTab, fName);
+	ASSERT_EQ(read, 0);
+
+	mItm *mtrx = createMatrix(&gTab);
+	startMatrix(&gTab, mtrx);
+	//Print_Matrix(gTab.n, mtrx);
+
+	float refer[9][9] = { {0, 1, -1, -1, -1, -1, -1, -1, -1}, {-1, 0, 3, -1, 1.414214, -1, -1, 11.180340, 10},
+	{-1, -1, 0, 2, -1, -1, -1, -1, -1}, {-1, -1, -1, 0, -1, -1, 3, -1, -1}, {-1, -1, -1, 4.123106, 0, 3.605551, -1, -1, -1},
+	{-1, -1, -1, 3.162278, -1, 0, -1, -1, -1}, {-1, -1, -1, -1, -1, -1, 0, -1, -1}, {-1, -1, -1, -1, -1, -1, 7, 0, -1},
+	{-1, -1, -1, -1, -1, -1, 11.045361, -1, 0} };
+
+	for (int i = 0; i < 9; i++) {
+		for (int j = 0; j < 9; j++){
+			//printf("%d %d\n", i, j);
+			ASSERT_FLOAT_EQ(mtrx->dist[i][j], refer[i][j]);
+		}
+	}
+
+	int eres = edge(&gTab, 1, 1);
+
+	for (int i = 0; i < 9; i++) {
+		for (int j = 0; j < 9; j++){
+			//printf("%d %d\n", i, j);
+			ASSERT_FLOAT_EQ(mtrx->dist[i][j], refer[i][j]);
+		}
+	}
+}
+
+TEST (Shortest, sh1) {
+	GraphClutch gTab;
+    gTab.n = 0;
+    for (int i =0; i < SIZE; i++) {
+    	gTab.grTab[i] = NULL;
+    }
+
+	char *fName = (char *)calloc(20, sizeof(char));
+	strcpy(fName, "tests/f.txt");
+	int read = readGraph(&gTab, fName);
+	ASSERT_EQ(read, 0);
+
+	mItm *matrix = fMatrix(&gTab);
+	//Print_Matrix(gTab.n, matrix);
+	Road ****shMx = optMx(gTab.n);
+	getOptimal(shMx, matrix, &gTab);
+
+	float summ = 0;
+	int nulls = 0;
+	for (int i = 0; i < gTab.n; i++) {
+		for (int j = 0; j < gTab.n; j++) {
+			for (int k = 0; k < 3; k++) {
+				if (shMx[i][j][k] == NULL)
+					nulls++;
+				else
+					summ += shMx[i][j][k]->dist;
+			}
+		}
+	}
+
+	ASSERT_EQ(nulls, 590);
+	ASSERT_FLOAT_EQ(summ, 951.56671);
+
+	ASSERT_FLOAT_EQ(shMx[0][6][0]->dist, 9);
+	Road *prev = shMx[0][6][0]->last;
+	ASSERT_EQ(matrix->names[prev->end], 4);
+	prev = prev->last;
+	ASSERT_EQ(matrix->names[prev->end], 3);
+	prev = prev->last;
+	ASSERT_EQ(matrix->names[prev->end], 2);
+	prev = prev->last;
+	prev = prev->last;
+	int n = 0;
+	if (prev == NULL)
+		n = 1;
+	ASSERT_EQ(n, 1);
+
+	ASSERT_FLOAT_EQ(shMx[0][6][1]->dist, 9.5373192);
+
+	ASSERT_FLOAT_EQ(shMx[0][6][2]->dist, 12.182043);
+	prev = shMx[0][6][2]->last;
+	ASSERT_EQ(matrix->names[prev->end], 4);
+	prev = prev->last;
+	ASSERT_EQ(matrix->names[prev->end], 6);
+	prev = prev->last;
+	ASSERT_EQ(matrix->names[prev->end], 5);
+	prev = prev->last;
+	ASSERT_EQ(matrix->names[prev->end], 2);
+	prev = prev->last;
+	prev = prev->last;
+	n = 0;
+	if (prev == NULL)
+		n = 1;
+	ASSERT_EQ(n, 1);
+
+	ASSERT_FLOAT_EQ(shMx[1][11][0]->dist, 28.897171);
+	prev = shMx[1][11][0]->last;
+	ASSERT_EQ(matrix->names[prev->end], 11);
+	prev = prev->last;
+	ASSERT_EQ(matrix->names[prev->end], 10);
+	prev = prev->last;
+	ASSERT_EQ(matrix->names[prev->end], 8);
+	prev = prev->last;
+	prev = prev->last;
+	n = 0;
+	if (prev == NULL)
+		n = 1;
+	ASSERT_EQ(n, 1);
+
+	n = 0;
+	if (shMx[1][11][1] == NULL && shMx[1][11][2] == NULL)
+		n = 1;
+	ASSERT_EQ(n, 1);
+
+	n = 0;
+	if (shMx[0][13][1] == NULL && shMx[0][13][1] == NULL && shMx[0][13][1] == NULL)
+		n = 1;
+	ASSERT_EQ(n, 1);
 }
 
 int main(int argc, char **argv) {
